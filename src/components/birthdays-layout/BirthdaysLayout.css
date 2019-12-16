@@ -1,0 +1,42 @@
+.birthdays-wrapper {
+  background-color: white;
+  padding: 20px;
+  margin-bottom: 10px;
+  overflow: auto;
+}
+
+.birthdays-photo-small {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.birthdays-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+  text-align: center;
+  align-items: center;
+}
+
+.birthdays-card:last-child {
+  padding: 0 10px;
+}
+
+.birthdays-body {
+  display: flex;
+  justify-content: flex-end;
+  overflow: auto;
+}
+
+.birthdays-header {
+  text-align: right;
+  margin: 0 20px 20px 0;
+  border-bottom: 1px solid #e20074;
+}
+
+@media (max-width: 550px) {
+  .birthdays-body {
+    justify-content: flex-start;
+  }
+}
