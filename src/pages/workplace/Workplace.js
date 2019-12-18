@@ -1,12 +1,9 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useLayoutEffect, useState, useContext } from "react";
 
-import {
-  WorkplaceSearch,
-  WorkplaceFilter,
-  WorkplaceMap
-} from "../../components";
+import { WorkplaceFilter, WorkplaceMap, Loader } from "../../components";
 import { WorkPlaceInfoContext } from "../../app/Context";
 import { fetchWorkPlaceList } from "../../actions/workPlace";
+import { ProfileContext } from "../../app/Context";
 
 import "./Workplace.css";
 
@@ -14,17 +11,16 @@ export const Workplace = () => {
   const [workPlaceInfo, workPlaceInfoDispatch] = useContext(
     WorkPlaceInfoContext
   );
-  useEffect(() => {
-    async function fetchData() {
-      await fetchWorkPlaceList(workPlaceInfoDispatch);
-    }
-    fetchData();
+  const [profile] = useContext(ProfileContext);
+
+  useLayoutEffect(() => {
+    fetchWorkPlaceList(workPlaceInfoDispatch);
   }, [workPlaceInfoDispatch]);
 
   const workPlaceList = workPlaceInfo.workPlaceList || [];
-  const [listToDisplay, setListDisplay] = useState(workPlaceList);
+  const [listToDisplay, setListDisplay] = useState(null);
 
-  return (
+  return profile.userId && profile.fullName && workPlaceInfo.workPlaceList ? (
     <div>
       <div className="workplace-vertical-divs workplace-down-row">
         <div className="workplace-left-column">
@@ -34,9 +30,11 @@ export const Workplace = () => {
           />
         </div>
         <div className="workplace-right-column">
-          <WorkplaceMap listToDisplay={listToDisplay} />
+          <WorkplaceMap listToDisplay={listToDisplay || workPlaceList} />
         </div>
       </div>
     </div>
+  ) : (
+    <Loader />
   );
 };

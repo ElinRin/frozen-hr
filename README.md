@@ -2,7 +2,7 @@
 
 # Install packages
 
-nmp i
+npm i
 
 ## Web
 

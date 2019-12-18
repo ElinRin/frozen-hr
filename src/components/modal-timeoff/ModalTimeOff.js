@@ -39,7 +39,7 @@ export const ModalTimeOff = ({ typeLabel, daysLabel, className }) => {
   };
 
   const submit = () => {
-    firebaseTools.changeStatus("not available");
+    firebaseTools.changeStatus("not available").catch(() => {});
     const sd = new Date(startDate);
     const fd = new Date(finishDate);
     const today = new Date();
@@ -60,13 +60,15 @@ export const ModalTimeOff = ({ typeLabel, daysLabel, className }) => {
       setStartError(false);
       setFinishError(false);
       setDaysError(false);
-      firebaseTools.dayOffUpdate(typeLabel, daysLabel - num);
-      firebaseTools.newEvent({
-        event: label[typeLabel],
-        startDate: startDate,
-        finishDate: finishDate,
-        comment: comment
-      });
+      firebaseTools.dayOffUpdate(typeLabel, daysLabel - num).catch(() => {});
+      firebaseTools
+        .newEvent({
+          event: label[typeLabel],
+          startDate: startDate,
+          finishDate: finishDate,
+          comment: comment
+        })
+        .catch(() => {});
       return setModal(!modal);
     }
   };
@@ -115,9 +117,9 @@ export const ModalTimeOff = ({ typeLabel, daysLabel, className }) => {
           </Form>
         </ModalBody>
         <ModalFooter>
-          {daysError && <div>Error: you don't have enough days</div>}
-          {startError && <div>Error: start date should be in the future</div>}
-          {finishError && <div>Error: the end should be after the beginning</div>}
+          {daysError && <div>You don't have enough days</div>}
+          {startError && <div>Start date should be in the future</div>}
+          {finishError && <div>The end should be after the beginning</div>}
           <Button color="primary" onClick={submit}>
             Submit
           </Button>

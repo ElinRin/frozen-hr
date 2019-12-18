@@ -72,7 +72,7 @@ export const Profile = ({ userId }) => {
   );
 
   if (typeof user === "undefined") {
-    fetchUser(userId, usersInfoDispatch).catch(error => console.log(error));
+    fetchUser(userId, usersInfoDispatch).catch(error => {});
     return <div></div>;
   } else {
     return returnProfile(user);

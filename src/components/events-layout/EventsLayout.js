@@ -35,7 +35,8 @@ export const EventsLayout = () => {
       )
       .then(a => {
         setEvents(a);
-      });
+      })
+      .catch(() => setEvents([]));
   }, []);
 
   return (

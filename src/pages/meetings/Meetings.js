@@ -12,12 +12,12 @@ import "./Meetings.css";
 
 export const Meetings = () => {
   const [profile] = useContext(ProfileContext);
-  const [roomName, setRoomName] = useState("roomName");
+  const [, setRoomName] = useState("roomName");
   const openNewEventModal = roomName => {
     setRoomName(roomName);
   };
 
-  return profile.userId ? (
+  return profile.userId && profile.fullName ? (
     <Container>
       <Row>
         <Col className="meetings-wrapper">

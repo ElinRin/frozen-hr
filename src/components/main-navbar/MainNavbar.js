@@ -16,36 +16,66 @@ import {
   DropdownItem
 } from "reactstrap";
 import logo from "../../images/frozen32.png";
-import { ProfileContext } from "../../app/Context";
-import { logoutUser, fetchMe, loginUserByToken } from "../../actions/user";
+import {
+  ProfileContext,
+  UsersInfoContext,
+  WorkPlaceInfoContext
+} from "../../app/Context";
+import { logoutUser, fetchMe, login } from "../../actions/user";
 import "./MainNavbar.css";
 
 export const MainNavbar = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["frozenToken"]);
   const [isOpen, setIsOpen] = useState(false);
   const [profile, profileDispatch] = useContext(ProfileContext);
+  const [usersInfo, usersInfoDispatch] = useContext(UsersInfoContext);
+  const [workPlaceInfo, workPlaceInfoDispatch] = useContext(
+    WorkPlaceInfoContext
+  );
   const path = usePath();
   const toggle = () => setIsOpen(!isOpen);
-
-  if (path !== "/login" && !(profile.userId && profile.userId.length)) {
-    if (cookies.token) {
-      loginUserByToken(cookies.token, profileDispatch).then(id => {
-        fetchMe(profileDispatch).catch(error => console.log(error));
-      });
-    } else {
-      navigate("/login", true);
-    }
-  }
 
   useEffect(() => {
     if (
       path !== "/login" &&
-      profile.userId &&
-      typeof profile.profileImage === "undefined"
+      path !== "/error" &&
+      !(profile.userId && profile.userId.length)
     ) {
-      fetchMe(profileDispatch).catch(error => console.log(error));
+      login(profileDispatch).then(id => {
+        if (!id) {
+          navigate("/login", true);
+        }
+      });
     }
-  }, [path, profile, profile.userId, profileDispatch]);
+  }, [path, profile.userId, profileDispatch]);
+
+  useEffect(() => {
+    if (
+      (profile.error || usersInfo.error || workPlaceInfo.error) &&
+      path !== "/error"
+    ) {
+      navigate("/error", true);
+    }
+  }, [
+    path,
+    profile,
+    profile.error,
+    usersInfo,
+    usersInfo.error,
+    workPlaceInfo,
+    workPlaceInfo.error
+  ]);
+
+  useEffect(() => {
+    if (
+      path !== "/login" &&
+      path !== "/error" &&
+      profile.userId &&
+      !profile.fullName
+    ) {
+      fetchMe(profileDispatch).catch(error => {});
+    }
+  }, [path, profile.fullName, profile.userId, profileDispatch]);
 
   const renderNavBar = () => (
     <Navbar color="white" light expand="md" className="main-navbar-container">
@@ -95,7 +125,9 @@ export const MainNavbar = () => {
               <DropdownItem divider />
               <DropdownItem
                 onClick={() => {
-                  removeCookie("token");
+                  removeCookie("frozenToken", {
+                    path: "/"
+                  });
                   logoutUser(profileDispatch);
                 }}
               >
@@ -108,5 +140,13 @@ export const MainNavbar = () => {
     </Navbar>
   );
 
-  return <>{profile.userId && renderNavBar()} </>;
+  return (
+    <>
+      {path !== "/login" &&
+        path !== "/error" &&
+        profile.userId &&
+        profile.fullName &&
+        renderNavBar()}
+    </>
+  );
 };

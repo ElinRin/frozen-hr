@@ -1,6 +1,6 @@
 import React from "react";
 
-import map from "../../mocks/office-map.jpeg";
+import map from "../../images/office-map.jpeg";
 import { WorkplaceMapSeat } from "..";
 
 import "./WorkplaceMap.css";

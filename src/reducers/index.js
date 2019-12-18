@@ -6,15 +6,13 @@ import {
   FETCH_WORK_PLACE,
   FETCH_WORK_PLACE_LIST_BY_FLOOR,
   RESERVE_WORK_PLACE,
-  FETCH_PARKING,
-  FETCH_PARKING_LIST,
-  RESERVE_PARKING,
   FETCH_BIRTHDAY_USERS,
   SEARCH_USER_BY_FULL_NAME,
   CURRENT_USER,
   SEARCH_WORK_PLACE_BY_USER_ID,
   SEARCH_WORK_PLACE_BY_PROPERTIES,
-  FETCH_ME
+  FETCH_ME,
+  ERROR
 } from "../actions/types";
 
 export const profile = (state = null, action) => {
@@ -29,6 +27,9 @@ export const profile = (state = null, action) => {
       return { ...state, ...action.payload };
 
     case CURRENT_USER:
+      return { ...state, ...action.payload };
+
+    case ERROR:
       return { ...state, ...action.payload };
 
     default:
@@ -48,6 +49,8 @@ export const users = (state = null, action) => {
       return { ...state, ...action.payload };
 
     case SEARCH_USER_BY_FULL_NAME:
+      return { ...state, ...action.payload };
+    case ERROR:
       return { ...state, ...action.payload };
 
     default:
@@ -71,21 +74,7 @@ export const workPlace = (state = null, action) => {
 
     case SEARCH_WORK_PLACE_BY_PROPERTIES:
       return { ...state, ...action.payload };
-
-    default:
-      return state;
-  }
-};
-
-export const parking = (state = null, action) => {
-  switch (action.type) {
-    case FETCH_PARKING:
-      return { ...state, ...action.payload };
-
-    case FETCH_PARKING_LIST:
-      return { ...state, ...action.payload };
-
-    case RESERVE_PARKING:
+    case ERROR:
       return { ...state, ...action.payload };
 
     default:

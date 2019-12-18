@@ -28,7 +28,8 @@ export const BirthdaysLayout = () => {
             })
             .sort((a, b) => a.age - b.age)
       )
-      .then(a => setBirthday(a));
+      .then(a => setBirthday(a))
+      .catch(() => setBirthday([]));
   }, []);
 
   return (

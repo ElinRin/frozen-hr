@@ -13,30 +13,12 @@ import "./Main.css";
 
 export const Main = () => {
   const [profile, profileDispatch] = useContext(ProfileContext);
-
-  useEffect(() => {
-    async function fetchData() {
-      await fetchMe(profileDispatch);
-    }
-    fetchData();
-  }, [profile.userId, profileDispatch]);
-
   const notAvailable = { pos: 0, label: "not available", color: "secondary" };
   const available = { pos: 1, label: "available", color: "primary" };
 
   const [status, setStatus] = useState(notAvailable);
 
-  useEffect(() => {
-    let status;
-    if (profile.status === "available") {
-      status = available;
-    } else {
-      status = notAvailable;
-    }
-    setStatus(status);
-  }, [profile.status]);
-
-  return profile.userId ? (
+  return profile.userId && profile.fullName ? (
     <div className="main-horizontal-wrapper">
       <div className="main-left-column">
         <div className="main-img-container">
@@ -57,9 +39,8 @@ export const Main = () => {
             } else {
               st = notAvailable;
             }
-            changeStatus(st.label, profileDispatch).catch(error =>
-              console.log(error)
-            );
+            changeStatus(st.label, profileDispatch).catch(error => {});
+            setStatus(st);
           }}
         >
           {status.label}

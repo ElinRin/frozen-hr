@@ -3,9 +3,7 @@ import React, { useEffect, useState } from "react";
 import { ModalTimeOff } from "../modal-timeoff/ModalTimeOff";
 import { firebaseTools } from "../../utils/firebase";
 
-
 export const DaysOffLayout = () => {
-
   const [daysOff, setDaysOff] = useState({
     everyYearVacation: 0,
     leaveWithoutPay: 0,
@@ -15,15 +13,22 @@ export const DaysOffLayout = () => {
   });
 
   useEffect(() => {
-    firebaseTools.daysOff().then(a => {setDaysOff(a)});
+    firebaseTools
+      .daysOff()
+      .then(a => {
+        setDaysOff(a);
+      })
+      .catch(() => {
+        setDaysOff({});
+      });
   }, []);
 
   const items = [
-    {typeLabel: "everyYearVacation", daysLabel: daysOff.everyYearVacation},
-    {typeLabel: "leaveWithoutPay", daysLabel: daysOff.leaveWithoutPay},
-    {typeLabel: "sickLeave", daysLabel: daysOff.sickLeave},
-    {typeLabel: "remoteWork", daysLabel: daysOff.remoteWork},
-    {typeLabel: "conference", daysLabel: daysOff.conference}
+    { typeLabel: "everyYearVacation", daysLabel: daysOff.everyYearVacation },
+    { typeLabel: "leaveWithoutPay", daysLabel: daysOff.leaveWithoutPay },
+    { typeLabel: "sickLeave", daysLabel: daysOff.sickLeave },
+    { typeLabel: "remoteWork", daysLabel: daysOff.remoteWork },
+    { typeLabel: "conference", daysLabel: daysOff.conference }
   ];
 
   return (
@@ -38,7 +43,5 @@ export const DaysOffLayout = () => {
         );
       })}
     </div>
-  )
+  );
 };
-
-

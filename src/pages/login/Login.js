@@ -4,22 +4,28 @@ import { navigate } from "hookrouter";
 import { Button, Form, FormGroup, Input } from "reactstrap";
 import { firebaseTools } from "../../utils/firebase";
 import { ProfileContext } from "../../app/Context";
-import { loginUser, loginUserByToken } from "../../actions/user";
+import { loginUser, login } from "../../actions/user";
+import { Loader } from "../../components";
 import "./Login.css";
 
 export const Login = ({ history }) => {
-  const [cookies, setCookie] = useCookies(["token"]);
+  const [cookies, setCookie, removeCookie] = useCookies(["frozenToken"]);
   const [profile, profileDispatch] = useContext(ProfileContext);
   const [error, setError] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("pending");
 
-  if (!(profile.userId && profile.userId.length)) {
-    if (cookies.token) {
-      loginUserByToken(cookies.token, profileDispatch);
-      navigate("./main", true);
+  useEffect(() => {
+    if (!(profile.userId && profile.userId.length)) {
+      login(profileDispatch).then(id => {
+        setStatus("notLoggedIn");
+      });
+    } else {
+      navigate("/main", true);
+      setStatus("loggedIn");
     }
-  }
+  }, [cookies.frozenToken, profile.userId, profileDispatch, removeCookie]);
 
   const handleSubmit = async event => {
     event.preventDefault();
@@ -29,47 +35,29 @@ export const Login = ({ history }) => {
       password &&
       password.trim().length > 0
     ) {
-      await loginUser({ email, password }, profileDispatch);
-
-      if (!profile.userId) {
-        setError(true);
-      } else {
-        firebaseTools
-          .currentUser()
-          .getIdToken()
-          .then(token => {
-            setCookie("token", token, {
-              path: "/"
-            });
-          });
-      }
-    }
-  };
-
-  const testLogin = async () => {
-    await loginUser(
-      {
-        email: "guest@telekom.com",
-        password: "guest1"
-      },
-      profileDispatch
-    );
-
-    firebaseTools
-      .currentUser()
-      .getIdToken()
-      .then(token => {
-        setCookie("token", token, {
-          path: "/"
-        });
+      await loginUser({ email, password }, profileDispatch).then(userId => {
+        if (!userId) {
+          setError(true);
+        } else {
+          const user = firebaseTools.currentUser();
+          if (user) {
+            user
+              .getIdToken()
+              .then(frozenToken => {
+                setCookie("frozenToken", frozenToken, {
+                  path: "/"
+                });
+              })
+              .catch(() => {});
+          }
+        }
       });
+    }
   };
 
-  useEffect(() => {
-    if (profile.userId && profile.userId.length) {
-      navigate("./main", true);
-    }
-  }, [history, profile.userId]);
+  if (status === "pending") {
+    return <Loader />;
+  }
 
   return (
     <div className="login-container">

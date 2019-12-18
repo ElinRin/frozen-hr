@@ -9,19 +9,14 @@ import {
   ModalFooter,
   ModalHeader
 } from "reactstrap";
-import { UsersInfoContext, WorkPlaceInfoContext } from "../../app/Context";
+import { UsersInfoContext } from "../../app/Context";
 import { fetchUser } from "../../actions/user";
 import { navigate } from "hookrouter";
-import { reserveWorkPlace } from "../../actions/workPlace";
-import { firebaseTools } from "../../utils/firebase";
 
 export const WorkplaceMapSeat = ({ id, x, y, color, uid }) => {
   const [modal, setModal] = useState(false);
   const [modal2, setModal2] = useState(false);
   const [usersInfo, usersInfoDispatch] = useContext(UsersInfoContext);
-  const [workPlaceInfo, workPlaceInfoDispatch] = useContext(
-    WorkPlaceInfoContext
-  );
 
   useEffect(() => {
     if (uid) {

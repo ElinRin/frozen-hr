@@ -13,34 +13,35 @@ const eventsFS = firebaseFS.collection("events");
 let count = 0;
 
 export const firebaseTools = {
+  login: () => {
+    return new Promise((resolve, reject) => {
+      firebase.auth().onAuthStateChanged(
+        auth => {
+          if (auth) {
+            resolve(firebaseAuth.currentUser);
+          } else {
+            reject();
+          }
+        },
+        error => {
+          reject(error);
+        }
+      );
+    });
+  },
+
   loginUser: user => {
     if (count < 1000) {
       count++;
 
-      if (count < 1000) {
-        return firebaseAuth
-          .signInWithEmailAndPassword(user.email, user.password)
-          .then(userInfo => userInfo)
-          .catch(error => ({
-            errorCode: error.code,
-            errorMessage: error.message
-          }));
-      }
+      return firebaseAuth.signInWithEmailAndPassword(user.email, user.password);
     }
-  },
-
-  loginUserByToken: token => {
-    if (count < 1000) {
-      count++;
-
-      return firebaseAuth
-        .signInWithCustomToken(token)
-        .then(userInfo => userInfo)
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
-    }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   logoutUser: () => {
@@ -52,6 +53,12 @@ export const firebaseTools = {
         message: "logout"
       }));
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   fetchMe: () => {
@@ -65,17 +72,22 @@ export const firebaseTools = {
           .get()
           .then(profile => {
             return { userId, ...profile.data() };
+          });
+      } else {
+        return Promise.reject(
+          new Error({
+            errorCode: 404,
+            errorMessage: "current user not found"
           })
-          .catch(error => ({
-            errorCode: error.code,
-            errorMessage: error.message
-          }));
-      } else
-        return Promise.reject({
-          errorCode: 404,
-          errorMessage: "current user not found"
-        });
+        );
+      }
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   currentUser: () => {
@@ -84,6 +96,7 @@ export const firebaseTools = {
 
       return firebaseAuth.currentUser;
     }
+    return null;
   },
 
   currentUserId: () => {
@@ -91,6 +104,7 @@ export const firebaseTools = {
       count++;
       return firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
     }
+    return () => null;
   },
 
   fetchUser: userId => {
@@ -100,12 +114,14 @@ export const firebaseTools = {
       return usersFS
         .doc(userId)
         .get()
-        .then(userInfo => userInfo)
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        .then(userInfo => userInfo);
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   changeStatus: newStatus => {
@@ -113,16 +129,16 @@ export const firebaseTools = {
       count++;
 
       const userId = firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
-      usersFS
-        .doc(userId)
-        .update({
-          status: newStatus
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      return usersFS.doc(userId).update({
+        status: newStatus
+      });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   searchUserByFullName: fullName => {
@@ -134,12 +150,14 @@ export const firebaseTools = {
         .get()
         .then(userList =>
           userList.docs.map(a => ({ userId: a.id, ...a.data() }))
-        )
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        );
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   fetchWorkPlace: workPlaceId => {
@@ -149,12 +167,14 @@ export const firebaseTools = {
       return workPlacesFS
         .doc(workPlaceId)
         .get()
-        .then(workPlaceInfo => workPlaceInfo.data())
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        .then(workPlaceInfo => workPlaceInfo.data());
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   fetchWorkPlaceList: () => {
@@ -165,12 +185,14 @@ export const firebaseTools = {
         .get()
         .then(workPlaceList =>
           workPlaceList.docs.map(a => ({ id: a.id, ...a.data() }))
-        )
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        );
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   reserveWorkPlace: workPlaceId => {
@@ -178,16 +200,16 @@ export const firebaseTools = {
       count++;
 
       const userId = firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
-      workPlacesFS
-        .doc(workPlaceId)
-        .update({
-          userId: userId
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      workPlacesFS.doc(workPlaceId).update({
+        userId: userId
+      });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   searchWorkPlaceByUserId: userId => {
@@ -197,12 +219,14 @@ export const firebaseTools = {
       return workPlacesFS
         .where("userId", "==", userId)
         .get()
-        .then(userList => userList.docs.map(a => a.data()))
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        .then(userList => userList.docs.map(a => a.data()));
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   searchWorkPlaceByProperties: properties => {
@@ -213,14 +237,14 @@ export const firebaseTools = {
       for (let key in properties) {
         wp = wp.where(key, "==", properties[key]);
       }
-      return wp
-        .get()
-        .then(workPlaceList => workPlaceList)
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      return wp.get().then(workPlaceList => workPlaceList);
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   fetchParking: parkingId => {
@@ -230,12 +254,14 @@ export const firebaseTools = {
       return parkingFS
         .doc(parkingId)
         .get()
-        .then(parkingInfo => parkingInfo)
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        .then(parkingInfo => parkingInfo);
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   fetchParkingList: () => {
@@ -252,12 +278,14 @@ export const firebaseTools = {
             return res;
           });
           return data;
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+        });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   reserveParking: parkingId => {
@@ -265,16 +293,16 @@ export const firebaseTools = {
       count++;
 
       const userId = firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
-      parkingFS
-        .doc(parkingId)
-        .update({
-          userId: userId
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      parkingFS.doc(parkingId).update({
+        userId: userId
+      });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   daysOff: () => {
@@ -282,17 +310,21 @@ export const firebaseTools = {
       count++;
 
       const userId = firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
-      return daysOffFS
-        .doc(userId)
-        .get()
-        .then(profile => {
-          return { userId, ...profile.data() };
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      if (userId) {
+        return daysOffFS
+          .doc(userId)
+          .get()
+          .then(profile => {
+            return { userId, ...profile.data() };
+          });
+      }
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   events: () => {
@@ -306,12 +338,14 @@ export const firebaseTools = {
         .then(events => ({
           userId: userId,
           events: events.docs.map(a => a.data())
-        }))
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
         }));
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   dayOffUpdate: (label, number) => {
@@ -319,16 +353,16 @@ export const firebaseTools = {
       count++;
 
       const userId = firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
-      return daysOffFS
-        .doc(userId)
-        .update({
-          [label]: number
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      return daysOffFS.doc(userId).update({
+        [label]: number
+      });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   newEvent: event => {
@@ -336,31 +370,32 @@ export const firebaseTools = {
       count++;
 
       const userId = firebaseAuth.currentUser && firebaseAuth.currentUser.uid;
-      return eventsFS
-        .add({
-          userId: userId,
-          ...event
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      return eventsFS.add({
+        userId: userId,
+        ...event
+      });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   },
 
   allUsers: () => {
     if (count < 1000) {
       count++;
 
-      return usersFS
-        .get()
-        .then(userList => {
-          return userList.docs.map(a => ({ userId: a.id, ...a.data() }));
-        })
-        .catch(error => ({
-          errorCode: error.code,
-          errorMessage: error.message
-        }));
+      return usersFS.get().then(userList => {
+        return userList.docs.map(a => ({ userId: a.id, ...a.data() }));
+      });
     }
+    return Promise.reject(
+      new Error({
+        errorCode: 404,
+        errorMessage: "over reads"
+      })
+    );
   }
 };

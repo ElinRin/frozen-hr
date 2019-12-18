@@ -1,21 +1,35 @@
 import React from "react";
-import { useRoutes } from "hookrouter";
+import { useRoutes, setBasepath } from "hookrouter";
+import isElectron from "is-electron";
 import { BrowserRouter as Router } from "react-router-dom";
 
-import { Login, Home, Main, Workplace, Meetings, Colleagues } from "../pages";
+import {
+  Login,
+  Error,
+  Home,
+  Main,
+  Workplace,
+  Meetings,
+  Colleagues
+} from "../pages";
 import { MainNavbar, NoPageFound } from "../components";
 
 import "./App.css";
 
 const routes = {
-  "/": () => <Login />,
+  "/": () => <Main />,
   "/login": () => <Login />,
+  "/error": () => <Error />,
   "/main": () => <Main />,
   "/u/:id": ({ id }) => <Home userId={id} />,
   "/workplace": () => <Workplace />,
   "/colleagues": () => <Colleagues />,
   "/meetings": () => <Meetings />
 };
+
+if (isElectron()) {
+  setBasepath(window.location.pathname);
+}
 
 export const Routes = () => {
   const routeResult = useRoutes(routes);

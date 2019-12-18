@@ -3,6 +3,7 @@
   padding: 20px;
   margin-bottom: 10px;
   overflow: auto;
+  height: 200px;
 }
 
 .birthdays-photo-small {

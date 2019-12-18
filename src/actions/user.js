@@ -2,39 +2,55 @@ import {
   LOGIN_USER,
   LOGOUT_USER,
   FETCH_USER,
-  CHANGE_STATUS,
-  FETCH_BIRTHDAY_USERS,
   SEARCH_USER_BY_FULL_NAME,
-  CURRENT_USER,
-  FETCH_ME
+  FETCH_ME,
+  ERROR
 } from "./types";
 import { firebaseTools } from "../utils/firebase";
 
 export const loginUser = async (user, dispatch) => {
-  await firebaseTools.loginUser(user);
+  await firebaseTools.loginUser(user).catch(() => {});
 
-  await dispatch({
-    type: LOGIN_USER,
-    payload: { userId: firebaseTools.currentUserId() }
-  });
+  const userId = firebaseTools.currentUserId();
+  if (userId) {
+    dispatch({
+      type: LOGIN_USER,
+      payload: { userId: userId }
+    });
+  }
+  return userId;
 };
 
-export const loginUserByToken = async (token, dispatch) => {
-  await firebaseTools.loginUserByToken(token);
-  let userId = firebaseTools.currentUserId();
-  await dispatch({
-    type: LOGIN_USER,
-    payload: { userId: userId }
-  });
+export const login = async dispatch => {
+  const userId = await firebaseTools
+    .login()
+    .then(user => {
+      dispatch({
+        type: LOGIN_USER,
+        payload: { userId: user.uid }
+      });
+
+      return user.uid;
+    })
+    .catch(e => {});
 
   return userId;
 };
 
 export const logoutUser = async dispatch => {
-  await firebaseTools.logoutUser();
-  await dispatch({
-    type: LOGOUT_USER
-  });
+  await firebaseTools
+    .logoutUser()
+    .then(() =>
+      dispatch({
+        type: LOGOUT_USER
+      })
+    )
+    .catch(e =>
+      dispatch({
+        type: ERROR,
+        payload: { error: e }
+      })
+    );
 };
 
 export const fetchMe = async dispatch => {
@@ -46,45 +62,55 @@ export const fetchMe = async dispatch => {
         payload: profile
       })
     )
-    .catch(() =>
+    .catch(e => {
+      if (e.errorMessage === "over reads") {
+        dispatch({
+          type: ERROR,
+          payload: { error: e }
+        });
+      }
+    });
+};
+
+export const fetchUser = async (userId, dispatch) => {
+  await firebaseTools
+    .fetchUser(userId)
+    .then(userInfo => {
+      return dispatch({
+        type: FETCH_USER,
+        payload: { [userId]: userInfo.data() }
+      });
+    })
+    .catch(e =>
       dispatch({
-        type: LOGOUT_USER
+        type: ERROR,
+        payload: { error: e }
       })
     );
 };
 
-export const currentUser = async dispatch => {
-  await dispatch({
-    type: CURRENT_USER,
-    payload: { userId: firebaseTools.currentUserId() }
-  });
-};
-
-export const fetchUser = async (userId, dispatch) => {
-  await firebaseTools.fetchUser(userId).then(userInfo => {
-    return dispatch({
-      type: FETCH_USER,
-      payload: { [userId]: userInfo.data() }
+export const changeStatus = async (newStatus, dispatch) => {
+  await firebaseTools.changeStatus(newStatus).catch(e => {
+    dispatch({
+      type: ERROR,
+      payload: { error: e }
     });
   });
-};
-
-export const changeStatus = async (newStatus, dispatch) => {
-  await firebaseTools.changeStatus(newStatus);
-  await fetchMe(dispatch);
 };
 
 export const searchUsersByName = async (name, dispatch) => {
-  firebaseTools.searchUserByFullName(name).then(userList => {
-    dispatch({
-      type: SEARCH_USER_BY_FULL_NAME,
-      payload: { searchList: userList }
-    });
-  });
+  firebaseTools
+    .searchUserByFullName(name)
+    .then(userList => {
+      dispatch({
+        type: SEARCH_USER_BY_FULL_NAME,
+        payload: { searchList: userList }
+      });
+    })
+    .catch(e =>
+      dispatch({
+        type: ERROR,
+        payload: { error: e }
+      })
+    );
 };
-
-// export const fetchBirthDayUsers = async dispatch =>
-//   await dispatch({
-//     type: FETCH_BIRTHDAY_USERS,
-//     payload: firebaseTools.fetchBirthDayUsers()
-//   });
